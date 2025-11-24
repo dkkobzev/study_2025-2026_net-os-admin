@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ru-RU">
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Кобзев Д. К.">
+  <title>Настройка журналирования на сетевом оборудовании</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link href="data:text/plain;charset=UTF-8;charset=utf-8,Not%20found%3A%20%2Freveal%2Ejs%404%2E6%2E1%2F%2Fdist%2Freset%2Ecss" rel="stylesheet">
+  <link href="data:text/plain;charset=UTF-8;charset=utf-8,Not%20found%3A%20%2Freveal%2Ejs%404%2E6%2E1%2F%2Fdist%2Freveal%2Ecss" rel="stylesheet">
+  <style>
+.reveal .sourceCode { 
+overflow: visible;
+}
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+</style>
+  <link href="data:text/plain;charset=UTF-8;charset=utf-8,Not%20found%3A%20%2Freveal%2Ejs%404%2E6%2E1%2F%2Fdist%2Ftheme%2Fbeige%2Ecss" rel="stylesheet" id="theme">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide">
+  <h1 class="title">Настройка журналирования на сетевом
+оборудовании</h1>
+  <p class="subtitle">Администрирование сетевых подсистем</p>
+  <p class="author">Кобзев Д. К.</p>
+  <p class="institute">Российский университет дружбы народов, Москва,
+Россия</p>
+  <p class="date">24 ноября 2025</p>
+</section>
+
+<section>
+<section id="информация" class="title-slide slide level1">
+<h1>Информация</h1>
+
+</section>
+<section id="докладчик" class="slide level2">
+<h2>Докладчик</h2>
+<div class="columns" data-align="center">
+<div class="column" style="width:70%;">
+<ul>
+<li>Кобзев Дмитрий Константинович</li>
+<li>Студент</li>
+<li>Российский университет дружбы народов</li>
+<li>НПИбд-01-23</li>
+</ul>
+</div><div class="column" style="width:30%;">
+
+</div>
+</div>
+</section>
+<section id="введение" class="slide level2">
+<h2>Введение</h2>
+<p><strong>Тема:</strong> Настройка журналирования на сетевом
+оборудовании</p>
+<p><strong>Актуальность:</strong> В современных сетях, где количество
+устройств и сервисов постоянно растёт, оперативное отслеживание их
+состояния становится критически важным элементом администрирования
+сетевых подсистем. Журналирование системных событий позволяет:</p>
+<ul>
+<li><p>Выявлять сбои и нарушения безопасности в реальном
+времени</p></li>
+<li><p>Проводить анализ инцидентов после их возникновения</p></li>
+<li><p>Соответствовать требованиям стандартов информационной
+безопасности</p></li>
+<li><p>Оптимизировать работу сетевой инфраструктуры</p></li>
+</ul>
+<p><strong>Цель:</strong> Показать практические аспекты настройки
+централизованной системы журналирования в сетевой инфраструктуре на базе
+rsyslog, включая:</p>
+<ul>
+<li><p>Настройку сервера для приёма логов</p></li>
+<li><p>Конфигурацию клиентов для отправки данных</p></li>
+<li><p>Инструменты для просмотра и анализа собранной информации</p></li>
+</ul>
+</section>
+<section id="журналирование-системных-событий" class="slide level2">
+<h2>Журналирование системных событий</h2>
+<p>В системах на базе Unix/Linux важное место при администрировании
+занимает отслеживание системных событий (и в частности возникновение
+возможных ошибок в процессе настройки каких-то служб) через ведение
+log-файлов процессов системы. Журналирование системных событий
+заключается в фиксировании с помощью сокета syslog в лог-файлах
+сообщений об ошибках и сообщений о состоянии работы практически всех
+процессов системы. Обычно лог-файлы располагаются в каталоге
+/var/log.</p>
+<p>Для управления логированием событий обычно используется служба syslog
+или её модификация rsyslog. С их помощью можно настроить уровень
+подробности логирования для каждого процесса. Все настройки rsyslog
+находятся в файле /etc/rsyslog.conf. В этот же файл подключаются
+дополнительные файлы настройки из каталога /etc/rsyslog.d/.</p>
+</section>
+<section id="зачем-нужен-сервер-сетевого-журнала" class="slide level2">
+<h2>Зачем нужен сервер сетевого журнала</h2>
+<p>Сохранение всех событий системы приводит к быстрому заполнению
+дискового пространства. Кроме того, если требуется администрировать
+несколько узлов сети, то удобнее это делать с одного узла:</p>
+<ul>
+<li><p>проще обеспечить безопасность и целостность лог-сообщений,
+которые в этом случае не будут доступны злоумышленнику, если не нарушена
+безопасность самого сервера;</p></li>
+<li><p>проще и удобнее управлять дисковым пространством и политиками по
+времени хранения информации в журналах, в том числе настроив logrotate
+для сохранения сообщений в течение более длительного периода, чем период
+по умолчанию;</p></li>
+<li><p>проверять файлы журналов на одном сервере проще, чем подключиться
+к нескольким серверам для анализа информации, которая была
+зарегистрирована.</p></li>
+</ul>
+</section>
+<section id="типы-логов" class="slide level2">
+<h2>Типы логов</h2>
+<p>В зависимости от того, информация какого типа фиксируется системой,
+формируются разные типы записей. Поэтому логи делятся на: системные,
+серверные, почтовые, логи аутентификации, авторизации, log file
+приложений, баз данных и т.д. Подобная группировка помогает быстрее
+находить нужный лог и оптимизировать работу с ним.</p>
+<p>Часто используется несколько уровней важности сообщений, таких как
+DEBUG, INFO, WARNING, ERROR и CRITICAL. Это помогает фильтровать и
+приоритизировать информацию в журналах.</p>
+</section>
+<section id="настройка-сервера-сетевого-журнала" class="slide level2">
+<h2>Настройка сервера сетевого журнала</h2>
+<p>Создаем файл конфигурации сетевого хранения журналов</p>
+<pre><code>cd /etc/rsyslog.d
+touch netlog-server.conf</code></pre>
+<p>Включаем в нем приём записей журнала по TCP-порту 514:</p>
+<pre><code>$ModLoad imtcp
+$InputTCPServerRun 514</code></pre>
+<p>Перезапускаем службу rsyslog:</p>
+<p><code>systemctl restart rsyslog</code></p>
+<p>Настраиваем межсетевой экран для приёма сообщений по TCP-порту
+514:</p>
+<pre><code>firewall-cmd --add-port=514/tcp
+firewall-cmd --add-port=514/tcp --permanent</code></pre>
+</section>
+<section id="настройка-клиента-сетевого-журнала" class="slide level2">
+<h2>Настройка клиента сетевого журнала</h2>
+<p>Создаем файл конфигурации сетевого хранения журналов:</p>
+<pre><code>cd /etc/rsyslog.d
+touch netlog-client.conf</code></pre>
+<p>Включаем в нем перенаправление сообщений журнала на 514 TCP-порт
+сервера:</p>
+<p><code>*.* @@server.user.net:514</code></p>
+<p>Перезапускаем службу rsyslog:</p>
+<p><code>systemctl restart rsyslog</code></p>
+</section>
+<section id="просмотр-журнала" class="slide level2">
+<h2>Просмотр журнала</h2>
+<p>После настройки можно просматривать логи на сервере с помощью:</p>
+<ul>
+<li><p>Команды <code>tail -f /var/log/messages</code></p></li>
+<li><p>Графических утилит, например gnome-system-monitor</p></li>
+<li><p>Специализированных программ, таких как lnav</p></li>
+</ul>
+</section>
+<section id="внесение-изменений-в-настройки-внутреннего-окружения-виртуальных-машин" class="slide level2">
+<h2>Внесение изменений в настройки внутреннего окружения виртуальных
+машин</h2>
+<p>Для автоматизации всех описанных этапов настройки можно использовать
+скрипты на базе Vagrant. Процесс автоматизации реализуется через
+создание provisioning-скриптов для сервера и клиента. Эти скрипты
+размещаются в соответствующих каталогах /vagrant/provision/ и выполняют
+полную настройку при запуске виртуальных машин.</p>
+<p>Серверный скрипт netlog.sh автоматически копирует конфигурационные
+файлы из подготовленного каталога в целевую систему, настраивает
+firewall для открытия TCP-порта 514 и перезапускает службу rsyslog.
+Клиентский скрипт выполняет аналогичные операции, дополнительно
+устанавливая необходимые пакеты вроде lnav для анализа логов.</p>
+<p>Интеграция с Vagrant обеспечивается через добавление соответствующих
+секций в Vagrantfile, где указываются пути к скриптам для сервера и
+клиента. Это позволяет автоматически развернуть полностью готовую
+систему сетевого журналирования без ручного вмешательства.</p>
+</section>
+<section id="заключение" class="slide level2">
+<h2>Заключение</h2>
+<p>Централизованное журналирование с использованием rsyslog и
+автоматизация развертывания через Vagrant позволяют создать надежную
+систему мониторинга сетевой инфраструктуры. Данный подход обеспечивает
+безопасное хранение логов, упрощает администрирование и ускоряет реакцию
+на инциденты.</p>
+</section></section>
+    </div>
+  </div>
+
+  <script src="data:text/plain;charset=UTF-8;charset=utf-8,Not%20found%3A%20%2Freveal%2Ejs%404%2E6%2E1%2F%2Fdist%2Freveal%2Ejs"></script>
+
+  <!-- reveal.js plugins -->
+  <script src="data:text/plain;charset=UTF-8;charset=utf-8,Not%20found%3A%20%2Freveal%2Ejs%404%2E6%2E1%2F%2Fplugin%2Fnotes%2Fnotes%2Ejs"></script>
+  <script src="data:text/plain;charset=UTF-8;charset=utf-8,Not%20found%3A%20%2Freveal%2Ejs%404%2E6%2E1%2F%2Fplugin%2Fsearch%2Fsearch%2Ejs"></script>
+  <script src="data:text/plain;charset=UTF-8;charset=utf-8,Not%20found%3A%20%2Freveal%2Ejs%404%2E6%2E1%2F%2Fplugin%2Fzoom%2Fzoom%2Ejs"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+        // Display controls in the bottom right corner
+        controls: true,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: true,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'bottom-right',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: false,
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: false,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: true,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'default',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: true,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'slide',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'fade',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // reveal.js plugins
+        plugins: [
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    </body>
+</html>

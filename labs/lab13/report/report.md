@@ -1,0 +1,201 @@
+---
+## Front matter
+title: Лабораторная работа
+subtitle: Номер 13
+author: "Кобзев Д. К."
+
+## Generic otions
+lang: ru-RU
+toc-title: "Содержание"
+
+## Bibliography
+bibliography: bib/cite.bib
+csl: /home/dkkobzev/pandoc/csl/gost-r-7-0-5-2008-numeric.csl
+
+## Pdf output format
+toc: true # Table of contents
+toc-depth: 2
+lof: true # List of figures
+lot: true # List of tables
+fontsize: 12pt
+linestretch: 1.5
+papersize: a4
+documentclass: scrreprt
+## I18n polyglossia
+polyglossia-lang:
+  name: russian
+  options:
+	- spelling=modern
+	- babelshorthands=true
+polyglossia-otherlangs:
+  name: english
+## I18n babel
+babel-lang: russian
+babel-otherlangs: english
+## Fonts
+mainfont: Liberation Serif
+romanfont: Liberation Serif
+sansfont: Liberation Sans
+monofont: Liberation Mono
+mathfont: STIX Two Math
+mainfontoptions: Ligatures=Common,Ligatures=TeX,Scale=0.94
+romanfontoptions: Ligatures=Common,Ligatures=TeX,Scale=0.94
+sansfontoptions: Ligatures=Common,Ligatures=TeX,Scale=MatchLowercase,Scale=0.94
+monofontoptions: Scale=MatchLowercase,Scale=0.94,FakeStretch=0.9
+
+## Pandoc-crossref LaTeX customization
+figureTitle: "Рис."
+tableTitle: "Таблица"
+listingTitle: "Листинг"
+lofTitle: "Список иллюстраций"
+lotTitle: "Список таблиц"
+lolTitle: "Листинги"
+## Misc options
+indent: true
+header-includes:
+  - \usepackage{indentfirst}
+  - \usepackage{float} # keep figures where there are in the text
+  - \floatplacement{figure}{H} # keep figures where there are in the text
+---
+
+# Цель работы
+
+Целью данной работы приобретение навыков настройки сервера NFS для удалённого доступа к ресурсам.
+
+# Выполнение лабораторной работы
+
+На сервере устанавливаем необходимое программное обеспечение.
+
+На сервере создаем каталог, который предполагается сделать доступным всем
+пользователям сети (Рис. 12.1).
+
+![Настройка сервера NFSv4](image/1.png){height=60%}
+
+В файле /etc/exports прописываем подключаемый через NFS общий каталог с доступом только на чтение (Рис. 12.2).
+
+![Файл /etc/exports](image/2.png){height=60%}
+
+Для общего каталога задаем контекст безопасности NFS.
+
+Применяем изменённую настройку SELinux к файловой системе.
+
+Запускаем сервер NFS.
+
+Настройте межсетевой экран для работы сервера NFS (Рис. 12.3).
+
+![Настройка сервера NFSv4](image/3.png){height=60%}
+
+На клиенте устанавливаем необходимое для работы NFS программное обеспечение.
+
+На клиенте пробуем посмотреть имеющиеся подмонтированные удалённые ресурсы  (Рис. 12.4).
+
+![Настройка сервера NFSv4](image/4.png){height=60%}
+
+Пробуем на сервере остановить сервис межсетевого экрана (Рис. 12.5).
+
+![Подмонтированные удалённые ресурсы](image/5.png){height=60%}
+
+На сервере запускаем сервис межсетевого экрана.
+
+Добавляем службы rpc-bind и mountd в настройки межсетевого экрана на сервере (Рис. 12.6).
+
+![Настройка сервера NFSv4](image/6.png){height=60%}
+
+На клиенте проверяем подключение удалённого ресурса (Рис. 12.7).
+
+![Подмонтированные удалённые ресурсы](image/5.png){height=60%}
+
+На клиенте создаем каталог, в который будет монтироваться удалённый ресурс, и подмонтируем дерево NFS.
+
+Проверяем, что общий ресурс NFS подключён правильно (Рис. 12.8).
+
+![Монтирование NFS на клиенте](image/7.png){height=60%}
+
+На клиенте в конце файла /etc/fstab добавляем следующую запись: server.user.net:/srv/nfs /mnt/nfs nfs _netdev 0 0 (Рис. 12.9).
+
+![Файл /etc/fstab](image/8.png){height=60%}
+
+На клиенте проверяем наличие автоматического монтирования удалённых ресурсов при запуске операционной системы (Рис. 12.10).
+
+![Автоматическое монтирование удалённых ресурсов](image/9.png){height=60%}
+
+На сервере создаем общий каталог, в который затем будет подмонтирован каталог с контентом веб-сервера.
+
+Подмонтируем каталог web-сервера.
+
+На сервере проверяем, что отображается в каталоге /srv/nfs (Рис. 12.11).
+
+![Общий каталог](image/10.png){height=60%}
+
+На сервере в файле /etc/exports добавляем экспорт каталога веб-сервера с удалённого ресурса (Рис. 12.12).
+
+![Файл /etc/exports](image/11.png){height=60%}
+
+На сервере в конце файла /etc/fstab добавляем следующую запись: /var/www /srv/nfs/www none bind 0 0 (Рис. 12.13).
+
+![Файл /etc/fstab](image/12.png){height=60%}
+
+Повторно экспортируем каталоги, указанные в файле /etc/exports.
+
+На клиенте проверьте каталог /mnt/nfs (Рис. 12.14).
+
+![Конфигурации для сервера](image/13.png){height=60%}
+
+На сервере под пользователем user в его домашнем каталоге создаем каталог common с полными правами доступа только для этого пользователя, а в нём файл user@server.txt.
+
+На сервере создаем общий каталог для работы пользователя user по сети.
+
+Подмонтируем каталог common пользователя user в NFS (Рис. 12.15).
+
+![Подключение каталогов для работы пользователей](image/14.png){height=60%}
+
+Подключаем каталог пользователя в файле /etc/exports, прописав в нём: /srv/nfs/home/user 192.168.0.0/16(rw) (Рис. 12.16).
+
+![Файл /etc/exports](image/15.png){height=60%}
+
+Вносим изменения в файл /etc/fstab (Рис. 12.17).
+
+![Файл /etc/fstab ](image/16.png){height=60%}
+
+Повторно экспортируйте каталоги.
+
+На клиенте проверяем каталог /mnt/nfs.
+
+На клиенте под пользователем user переходим в каталог /mnt/nfs/home/user и пробуем создать в нём файл user@client.txt и внести в него какие-либо изменения.
+
+Пробуем проделать это под пользователем root. (Рис. 12.18).
+
+![Подключение каталогов для работы пользователей](image/17.png){height=60%}
+
+На сервере смотрим, появились ли изменения в каталоге пользователя /home/user/common (Рис. 12.19).
+
+![Каталог /home/user/common ](image/18.png){height=60%}
+
+На виртуальной машине server переходим в каталог для внесения изменений в настройки внутреннего окружения /vagrant/provision/server/, создаем в нём каталог nfs, в который помещаем в соответствующие подкаталоги конфигурационные файлы (Рис. 12.20).
+
+![/vagrant/provision/server/](image/19.png){height=60%}
+
+Прописываем скрипт в файле nfs.sh (Рис. 12.21).
+
+![Файл nfs.sh](image/20.png){height=60%}
+
+На виртуальной машине client переходим в каталог для внесения изменений в настройки внутреннего окружения /vagrant/provision/client/
+
+В каталоге /vagrant/provision/client создаем исполняемый файл nfs.sh (Рис. 12.22).
+
+![/vagrant/provision/client/](image/21.png){height=60%}
+
+Прописываем скрипт в файле nfs.sh (Рис. 12.23).
+
+![Файл nfs.sh](image/22.png){height=60%}
+
+Для отработки созданных скриптов во время загрузки виртуальных машин server
+и client в конфигурационном файле Vagrantfile добавляем в соответствующих разделах конфигураций для сервера и клиента (Рис. 12.24).
+
+![Vagrantfile](image/23.png){height=60%}
+
+# Выводы
+
+В результате выполнения лабораторной работы мною были приобретены навыки настройки сервера NFS для удалённого доступа к ресурсам.
+
+# Список литературы{.unnumbered}
